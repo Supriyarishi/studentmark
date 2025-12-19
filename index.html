@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Login / Sign Up</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.container {
+  background: #fff;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  padding: 30px;
+  transition: all 0.3s ease;
+}
+h2 { text-align: center; margin-bottom: 20px; color: #333; }
+input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
+button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
+button.primary { background: linear-gradient(90deg, #ff8a00, #e52e71); color: #fff; }
+button.primary:hover { opacity: 0.85; }
+button.toggle { background: #6c63ff; color: #fff; margin-top: 5px; }
+button.toggle:hover { opacity: 0.85; }
+#subjects { display: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2 id="form-title">Student Login</h2>
+
+  <input id="rollno" placeholder="Roll No">
+  <input id="name" placeholder="Name (Sign Up only)">
+  <input id="password" type="password" placeholder="Password">
+
+  <div id="subjects">
+    <input id="tamil" type="number" placeholder="Subject 1">
+    <input id="english" type="number" placeholder="Subject 2">
+    <input id="maths" type="number" placeholder="Subject 3">
+    <input id="science" type="number" placeholder="Subject 4">
+    <input id="social" type="number" placeholder="Subject 5">
+  </div>
+
+  <button id="submit-btn" class="primary" onclick="submitForm()">Login</button>
+  <button class="toggle" onclick="toggleForm()">Switch to Sign Up</button>
+</div>
+
+<script>
+let isLogin = true;
+
+const rollno = document.getElementById("rollno");
+const nameInput = document.getElementById("name");
+const password = document.getElementById("password");
+const subject1 = document.getElementById("subject 1");
+const subject2 = document.getElementById("subject 2");
+const subject3 = document.getElementById("subject 3");
+const subject4 = document.getElementById("subject 4");
+const subject5 = document.getElementById("subject 5");
+
+// Toggle Login/SignUp
+function toggleForm() {
+  isLogin = !isLogin;
+  document.getElementById("form-title").innerText = isLogin ? "Student Login" : "Student Sign Up";
+  document.getElementById("submit-btn").innerText = isLogin ? "Login" : "Sign Up";
+  nameInput.style.display = isLogin ? "none" : "block";
+  document.getElementById("subjects").style.display = isLogin ? "none" : "block";
+  document.querySelector(".toggle").innerText = isLogin ? "Switch to Sign Up" : "Switch to Login";
+}
+toggleForm(); // initialize
+
+// Submit Login / SignUp
+function submitForm() {
+  if(isLogin){
+    fetch("http://localhost:3000/api/login", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ rollno:rollno.value, password:password.value })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+      if(data.token){
+        localStorage.setItem("token", data.token);
+        window.location.href = "marks.html";
+      } else alert("Login failed!");
+    });
+  } else {
+    fetch("http://localhost:3000/api/register", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        rollno:rollno.value,
+        name:nameInput.value,
+        password:password.value,
+        marks:{
+          tamil:Number(tamil.value),
+          english:Number(english.value),
+          maths:Number(maths.value),
+          science:Number(science.value),
+          social:Number(social.value)
+        }
+      })
+    })
+    .then(res=>res.text())
+    .then(msg=>{ alert(msg); toggleForm(); });
+  }
+}
+</script>
+
+</body>
+</html>
